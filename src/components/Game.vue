@@ -9,7 +9,7 @@
 
 <script>
 export default {
-    name: 'Game',
-    props: ['game']
+  name: 'Game',
+  props: ['game']
 }
 </script>
