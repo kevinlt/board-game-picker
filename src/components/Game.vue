@@ -1,7 +1,7 @@
 <template>
     <div>
         <slot></slot>
-        <span>{{ game.name }}</span>
+        <a :href="'/#/game?id='+game.gameId">{{ game.name }}</a>
         <span class="time">{{ game.playingTime }}</span>
         <span class="rating">{{ game.averageRating }}</span>
     </div>

@@ -30,31 +30,54 @@
                 </select>
             </div>
             <button @click="reset" type="button">Reset</button>
-            <input v-model="search" v-on:keyup="searchGame()" placeholder="Chercher un jeu"/>
-            <Game
-                v-for="game in searchList"
-                :key="game.gameId"
-                :game="game"
-                :class="game"
-            >
-                <img :src="game.thumbnail"/>
-                <button @click="addGameToList(game.gameId)" type="button">Ajouter à ma liste</button>
-            </Game>
+            <input v-model="search" v-on:keyup.prevent="searchGame" placeholder="Chercher un jeu"/>
+            <b-row>
+              <b-col>
+                <table class="table table-striped">
+                  <thead>
+                    <tr>
+                      <th></th>
+                      <th>Name</th>
+                      <th>Min players</th>
+                      <th>Max players</th>
+                      <th>Playing time</th>
+                      <th>Rating</th>
+                      <th>&nbsp;</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr v-for="game in searchList" :key="game.gameId">
+                      <td><img :src="game.thumbnail"/></td>
+                      <td>{{ game.name }}</td>
+                      <td>{{ game.minPlayers }}</td>
+                      <td>{{ game.maxPlayers }}</td>
+                      <td>{{ game.playingTime }}</td>
+                      <td>{{ game.averageRating }}</td>
+                      <td class="text-right">
+                        <a href="#" @click.prevent="addGameToList(game.gameId)">Add to my games</a>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </b-col>
+            </b-row>
+            
   </div>
 </template>
 
 <script>
 import Game from './Game'
+import api from '@/api'
 
 export default {
   name: 'Search',
   data () {
     return {
       searchList: [],
-      userGames: [],
       nbPlayers: 0,
       playingTime: 0,
-      search: ''
+      search: '',
+      model: {}
     }
   },
   components: {
@@ -66,7 +89,7 @@ export default {
     },
     filterTime: function () {
       this.filterPlayer()
-      this.searchList = this.searchList.filter(game => game.playingTime === this.playingTime)
+      this.searchList = this.searchList.filter(game => game.playingTime == this.playingTime)
     },
     reset: function () {
       this.searchList = []
@@ -75,11 +98,21 @@ export default {
       this.reset()
       this.searchList = this.$parent.$data.gamesData.filter(game => game.name.toUpperCase().includes(this.search.toUpperCase()))
     },
-    addGameToList: function (key) {
-      this.userGames.push(this.$parent.$data.gamesData.filter(game => game.gameId === key))
-    },
-    setCurrentPage: function (page) {
-      this.currentPage = page
+    async addGameToList (key) {
+      let game = this.$parent.$data.gamesData.filter(game => game.gameId === key)[0]
+      this.model = {
+        name: game.name,
+        image: game.image,
+        thumbnail: game.thumbnail,
+        minPlayers: game.minPlayers,
+        maxPlayers: game.maxPlayers,
+        isExpansion: game.isExpansion,
+        description: '',
+        type: '',
+        rating: game.averageRating
+      }
+      await api.createGame(this.model)
+      this.model = {}
     }
   }
 }
